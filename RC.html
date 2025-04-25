@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rod Cutting Visualizer</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px;
+      background: linear-gradient(to right, #e0eafc, #cfdef3);
+      color: #333;
+    }
+    h1 {
+      font-size: 2.5em;
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2c3e50;
+    }
+    .input-section {
+      background-color: #ffffffbb;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 500px;
+      margin: 0 auto 30px auto;
+    }
+    .input-section label {
+      font-weight: bold;
+    }
+    .input-section input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1em;
+    }
+    .input-section button {
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .input-section button:hover {
+      background-color: #2980b9;
+    }
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+      margin-top: 30px;
+    }
+    #profitChart {
+      display: block;
+      margin: 0 auto;
+    }
+    .steps {
+      max-height: 1000px;
+      overflow-y: auto;
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 900px;
+      margin: 20px auto;
+    }
+    .step {
+      margin-bottom: 24px;
+      padding: 20px;
+      background-color: #f0f8ff;
+      border-left: 5px solid #3498db;
+      border-radius: 6px;
+    }
+    .step canvas {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Rod Cutting Visualizer</h1>
+
+  <div class="input-section">
+    <label>Enter Prices (comma separated): </label>
+    <input type="text" id="pricesInput">
+    <label>Enter Rod Length: </label>
+    <input type="number" id="rodLength">
+    <label>Speed (ms per step): </label>
+    <input type="number" id="speedInput" value="1000" />
+    <button onclick="handleVisualize()">Visualize</button>
+  </div>
+
+  <h2>Maximum Profit</h2>
+  <canvas id="profitChart" width="400" height="200"></canvas>
+
+  <h2>Step-by-Step Process</h2>
+  <div class="steps" id="stepsContainer"></div>
+
+  <script>
+    function rodCutting(prices, n) {
+      let val = Array(n + 1).fill(0);
+      let steps = [];
+
+      for (let i = 1; i <= n; i++) {
+        let max_val = -Infinity;
+        for (let j = 0; j < i; j++) {
+          const current_val = prices[j] + val[i - j - 1];
+          if (current_val > max_val) {
+            max_val = current_val;
+          }
+          steps.push({
+            cut: `${j + 1} + ${i - j - 1}`,
+            value: current_val,
+            total: max_val,
+            i,
+            data: [prices[j], val[i - j - 1]],
+            labels: [`Cut: ${j + 1}`, `Remain: ${i - j - 1}`],
+          });
+        }
+        val[i] = max_val;
+      }
+      return [val[n], steps];
+    }
+
+    function handleVisualize() {
+      const pricesInput = document.getElementById("pricesInput").value;
+      const rodLength = parseInt(document.getElementById("rodLength").value);
+      const speed = parseInt(document.getElementById("speedInput").value);
+      const prices = pricesInput.split(",").map(Number);
+
+      const [maxProfit, steps] = rodCutting(prices, rodLength);
+
+      drawChart(maxProfit);
+      displayStepsSequentially(steps, speed);
+    }
+
+    function drawChart(profit) {
+      const ctx = document.getElementById("profitChart").getContext("2d");
+      if (window.bar) window.bar.destroy();
+      window.bar = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["Max Profit"],
+          datasets: [
+            {
+              label: "Profit",
+              data: [profit],
+              backgroundColor: "#4CAF50",
+            },
+          ],
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    }
+
+    async function displayStepsSequentially(steps, speed) {
+      const container = document.getElementById("stepsContainer");
+      container.innerHTML = "";
+
+      for (let index = 0; index < steps.length; index++) {
+        const step = steps[index];
+
+        const div = document.createElement("div");
+        div.className = "step";
+        div.innerHTML = `<strong>Step ${index + 1} (i = ${step.i}):</strong><br/>Cut tried: (${step.cut}) → Value = ${step.value}, Max so far = ${step.total}`;
+
+        const canvas = document.createElement("canvas");
+        canvas.width = 400;
+        canvas.height = 150;
+        div.appendChild(canvas);
+        container.appendChild(div);
+
+        new Chart(canvas.getContext("2d"), {
+          type: "bar",
+          data: {
+            labels: step.labels,
+            datasets: [
+              {
+                label: "Value from Cut",
+                data: step.data,
+                backgroundColor: ["#3498db", "#2ecc71"],
+              },
+            ],
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true,
+              },
+            },
+            plugins: {
+              legend: {
+                display: false
+              }
+            }
+          },
+        });
+
+        await new Promise(resolve => setTimeout(resolve, speed));
+        div.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  </script>
+</body>
+</html>
