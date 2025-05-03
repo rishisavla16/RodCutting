@@ -1,215 +1,446 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rod Cutting Visualizer</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      padding: 40px;
-      background: linear-gradient(to right, #e0eafc, #cfdef3);
-      color: #333;
-    }
-    h1 {
-      font-size: 2.5em;
-      text-align: center;
-      margin-bottom: 30px;
-      color: #2c3e50;
-    }
-    .input-section {
-      background-color: #ffffffbb;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      max-width: 500px;
-      margin: 0 auto 30px auto;
-    }
-    .input-section label {
-      font-weight: bold;
-    }
-    .input-section input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 1em;
-    }
-    .input-section button {
-      padding: 10px 20px;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 1em;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    .input-section button:hover {
-      background-color: #2980b9;
-    }
-    h2 {
-      text-align: center;
-      color: #2c3e50;
-      margin-top: 30px;
-    }
-    #profitChart {
-      display: block;
-      margin: 0 auto;
-    }
-    .steps {
-      max-height: 1000px;
-      overflow-y: auto;
-      background-color: #fff;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      max-width: 900px;
-      margin: 20px auto;
-    }
-    .step {
-      margin-bottom: 24px;
-      padding: 20px;
-      background-color: #f0f8ff;
-      border-left: 5px solid #3498db;
-      border-radius: 6px;
-    }
-    .step canvas {
-      margin-top: 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rod Cutting Visualizer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            background: #2d2d2d;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            width: 90%;
+        }
+
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-weight: 500;
+            color: #4CAF50;
+        }
+
+        input {
+            padding: 0.8rem;
+            background: #333;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .visualization-container {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .dp-table {
+            flex: 1;
+            min-width: 300px;
+            border-collapse: collapse;
+            background: #333;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .dp-table th, .dp-table td {
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid #444;
+            transition: all 0.3s;
+        }
+
+        .dp-table th {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .dp-table td {
+            background: #2d2d2d;
+        }
+
+        .highlight {
+            background: #4CAF50 !important;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .price-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #333;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .rod-container {
+            flex: 1;
+            min-width: 300px;
+            background: #333;
+            padding: 2rem;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .rod {
+            height: 80px;
+            background: linear-gradient(to right, #4CAF50, #45a049);
+            border-radius: 8px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .segment {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-right: 2px solid #fff;
+            transition: all 0.3s;
+            color: white;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .cut-marker {
+            position: absolute;
+            height: 100%;
+            width: 3px;
+            background: #ff4444;
+            top: 0;
+            transform: translateX(-50%);
+            box-shadow: 0 0 10px rgba(255,68,68,0.5);
+            z-index: 2;
+            opacity: 0;
+        }
+
+        .cut-animation {
+            animation: cutSlide 1s forwards;
+        }
+
+        @keyframes cutSlide {
+            0% { opacity: 0; left: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; left: 100%; }
+        }
+
+        .segment-info {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.9em;
+            color: #ccc;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+    </style>
 </head>
 <body>
-  <h1>Rod Cutting Visualizer</h1>
+    <div class="container">
+        <h1>Rod Cutting Visualizer</h1>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <label>Rod Length</label>
+                <input type="number" id="rodLength" min="1" value="">
+            </div>
+            <div class="controls">
+                <button onclick="generatePriceInputs()">Generate Price Inputs</button>
+                <button onclick="maximizeProfit()">Maximize Profit</button>
+                <button onclick="resetValues()">Reset</button>
+            </div>
+        </div>
 
-  <div class="input-section">
-    <label>Enter Prices (comma separated): </label>
-    <input type="text" id="pricesInput">
-    <label>Enter Rod Length: </label>
-    <input type="number" id="rodLength">
-    <label>Speed (ms per step): </label>
-    <input type="number" id="speedInput" value="1000" />
-    <button onclick="handleVisualize()">Visualize</button>
-  </div>
+        <div id="priceInputs" class="price-inputs"></div>
+        
+        <div id="result" class="result"></div>
+        
+        <div class="visualization-container">
+            <div class="rod-container">
+                <div class="rod" id="rod"></div>
+            </div>
+            <table class="dp-table" id="dpTable">
+                <thead>
+                    <tr>
+                        <th>Length</th>
+                        <th>Max Profit</th>
+                        <th>Cuts</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
 
-  <h2>Maximum Profit</h2>
-  <canvas id="profitChart" width="400" height="200"></canvas>
+    <script>
+        let prices = [];
+        let dp = [];
+        let cuts = [];
+        let animationSpeed = 500;
 
-  <h2>Step-by-Step Process</h2>
-  <div class="steps" id="stepsContainer"></div>
+        function generatePriceInputs() {
+            const length = parseInt(document.getElementById('rodLength').value);
+            const container = document.getElementById('priceInputs');
+            container.innerHTML = '';
 
-  <script>
-    function rodCutting(prices, n) {
-      let val = Array(n + 1).fill(0);
-      let steps = [];
-
-      for (let i = 1; i <= n; i++) {
-        let max_val = -Infinity;
-        for (let j = 0; j < i; j++) {
-          const current_val = prices[j] + val[i - j - 1];
-          if (current_val > max_val) {
-            max_val = current_val;
-          }
-          steps.push({
-            cut: `${j + 1} + ${i - j - 1}`,
-            value: current_val,
-            total: max_val,
-            i,
-            data: [prices[j], val[i - j - 1]],
-            labels: [`Cut: ${j + 1}`, `Remain: ${i - j - 1}`],
-          });
-        }
-        val[i] = max_val;
-      }
-      return [val[n], steps];
-    }
-
-    function handleVisualize() {
-      const pricesInput = document.getElementById("pricesInput").value;
-      const rodLength = parseInt(document.getElementById("rodLength").value);
-      const speed = parseInt(document.getElementById("speedInput").value);
-      const prices = pricesInput.split(",").map(Number);
-
-      const [maxProfit, steps] = rodCutting(prices, rodLength);
-
-      drawChart(maxProfit);
-      displayStepsSequentially(steps, speed);
-    }
-
-    function drawChart(profit) {
-      const ctx = document.getElementById("profitChart").getContext("2d");
-      if (window.bar) window.bar.destroy();
-      window.bar = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: ["Max Profit"],
-          datasets: [
-            {
-              label: "Profit",
-              data: [profit],
-              backgroundColor: "#4CAF50",
-            },
-          ],
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true,
-            },
-          },
-        },
-      });
-    }
-
-    async function displayStepsSequentially(steps, speed) {
-      const container = document.getElementById("stepsContainer");
-      container.innerHTML = "";
-
-      for (let index = 0; index < steps.length; index++) {
-        const step = steps[index];
-
-        const div = document.createElement("div");
-        div.className = "step";
-        div.innerHTML = `<strong>Step ${index + 1} (i = ${step.i}):</strong><br/>Cut tried: (${step.cut}) → Value = ${step.value}, Max so far = ${step.total}`;
-
-        const canvas = document.createElement("canvas");
-        canvas.width = 400;
-        canvas.height = 150;
-        div.appendChild(canvas);
-        container.appendChild(div);
-
-        new Chart(canvas.getContext("2d"), {
-          type: "bar",
-          data: {
-            labels: step.labels,
-            datasets: [
-              {
-                label: "Value from Cut",
-                data: step.data,
-                backgroundColor: ["#3498db", "#2ecc71"],
-              },
-            ],
-          },
-          options: {
-            scales: {
-              y: {
-                beginAtZero: true,
-              },
-            },
-            plugins: {
-              legend: {
-                display: false
-              }
+            for(let i = 1; i <= length; i++) {
+                const div = document.createElement('div');
+                div.className = 'input-group';
+                div.innerHTML = `
+                    <label>Length ${i} Price</label>
+                    <input type="number" id="price${i}" class="price-input" min="0" value="${i==1 ? 1 : i === 2 ? 5 : i === 3 ? 8 : i === 4 ? 9 : i === 5 ? 10 : i === 6 ? 17 : i === 7 ? 17 : 20}">
+                `;
+                container.appendChild(div);
             }
-          },
-        });
+        }
 
-        await new Promise(resolve => setTimeout(resolve, speed));
-        div.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
-  </script>
+        async function maximizeProfit() {
+            const length = parseInt(document.getElementById('rodLength').value);
+            prices = [];
+            
+            for(let i = 1; i <= length; i++) {
+                const price = parseInt(document.getElementById(`price${i}`).value) || 0;
+                prices.push(price);
+            }
+
+            // Initialize DP table
+            dp = new Array(length + 1).fill(0);
+            cuts = new Array(length + 1).fill(0);
+            
+            // Reset visualizations
+            resetVisualizations();
+            
+            // Create table body and rod
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            createRod(length);
+
+            for(let i = 0; i <= length; i++) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${i}</td>
+                    <td>0</td>
+                    <td></td>
+                `;
+                tableBody.appendChild(row);
+            }
+
+            // Perform DP with visualization
+            for(let i = 1; i <= length; i++) {
+                let maxVal = -Infinity;
+                let bestCut = 0;
+                
+                for(let j = 1; j <= i; j++) {
+                    const currentVal = prices[j-1] + dp[i-j];
+                    if(currentVal > maxVal) {
+                        maxVal = currentVal;
+                        bestCut = j;
+                    }
+                }
+                
+                dp[i] = maxVal;
+                cuts[i] = bestCut;
+                
+                // Update visualizations
+                await updateVisualizations(i, bestCut);
+            }
+
+            // Show final result and optimal cuts
+            showFinalResult(length);
+        }
+
+        function createRod(length) {
+            const rod = document.getElementById('rod');
+            rod.innerHTML = '';
+            rod.style.width = '100%';
+            
+            const segment = document.createElement('div');
+            segment.className = 'segment';
+            segment.style.width = '100%';
+            segment.innerHTML = `
+                ${length}"
+                <div class="segment-info">Profit: $${prices[length-1] || 0}</div>
+            `;
+            rod.appendChild(segment);
+        }
+
+        async function updateVisualizations(i, bestCut) {
+            // Update table
+            await updateTableRow(i, dp[i], bestCut);
+            
+            // Update rod visualization
+            if(bestCut > 0 && bestCut < i) {
+                await animateCut(bestCut, i);
+                updateRodSegments(i, bestCut);
+            }
+        }
+
+        async function animateCut(cutPosition, totalLength) {
+            const rod = document.getElementById('rod');
+            const cutMarker = document.createElement('div');
+            cutMarker.className = 'cut-marker cut-animation';
+            cutMarker.style.left = `${(cutPosition / totalLength) * 100}%`;
+            rod.appendChild(cutMarker);
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            cutMarker.remove();
+        }
+
+        function updateRodSegments(totalLength, cutPosition) {
+            const rod = document.getElementById('rod');
+            const segments = [];
+            
+            let remaining = totalLength;
+            while(remaining > 0) {
+                const cut = cuts[remaining] || remaining;
+                segments.push({
+                    length: cut,
+                    profit: prices[cut-1] || 0
+                });
+                remaining -= cut;
+            }
+
+            rod.innerHTML = '';
+            segments.forEach(segment => {
+                const segmentDiv = document.createElement('div');
+                segmentDiv.className = 'segment';
+                segmentDiv.style.width = `${(segment.length / totalLength) * 100}%`;
+                segmentDiv.innerHTML = `
+                    ${segment.length}"
+                    <div class="segment-info">$${segment.profit}</div>
+                `;
+                rod.appendChild(segmentDiv);
+            });
+        }
+
+        async function updateTableRow(i, value, cut) {
+            const row = document.getElementById('tableBody').children[i];
+            const cells = row.getElementsByTagName('td');
+            
+            // Highlight row
+            row.classList.add('highlight');
+            
+            // Animate value update
+            await new Promise(resolve => setTimeout(resolve, animationSpeed));
+            cells[1].textContent = `$${value}`;
+            cells[2].textContent = cut !== 0 ? `${cut} + ${i - cut}` : '';
+            
+            // Remove highlight
+            await new Promise(resolve => setTimeout(resolve, animationSpeed));
+            row.classList.remove('highlight');
+        }
+
+        function showFinalResult(length) {
+            const result = document.getElementById('result');
+            const cutSequence = getCutSequence(length);
+            result.innerHTML = `
+                <div>Maximum Profit: <span style="color:#4CAF50">$${dp[length]}</span></div>
+                <div>Optimal Cuts: <span style="color:#4CAF50">${cutSequence.join('" + ')}"</span></div>
+            `;
+        }
+
+        function getCutSequence(n) {
+            const sequence = [];
+            while(n > 0) {
+                sequence.push(cuts[n]);
+                n -= cuts[n];
+            }
+            return sequence.filter(Boolean);
+        }
+
+        function resetVisualizations() {
+            document.getElementById('rod').innerHTML = '';
+            document.getElementById('result').innerHTML = '';
+            document.getElementById('tableBody').innerHTML = '';
+        }
+
+        function resetValues() {
+            document.getElementById('rodLength').value = '';
+            document.getElementById('priceInputs').innerHTML = '';
+            resetVisualizations();
+            prices = [];
+            dp = [];
+            cuts = [];
+        }
+
+        // Initialize with default values
+        window.onload = function() {
+            generatePriceInputs();
+        };
+    </script>
 </body>
 </html>
